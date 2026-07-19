@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: NBA Daily Digest - Resumen diario de noticias NBA por Telegram
+
+Parameters:
+  GroqApiKey:
+    Type: String
+    NoEcho: true
+    Description: API key de Groq
+  TelegramBotToken:
+    Type: String
+    NoEcho: true
+    Description: Token del bot de Telegram
+  TelegramChatId:
+    Type: String
+    Description: Chat ID de Telegram
+
+Globals:
+  Function:
+    Timeout: 60
+    MemorySize: 128
+    Runtime: python3.12
+
+Resources:
+  NbaDailyDigestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.handler.handler
+      CodeUri: .
+      Description: Obtiene noticias NBA, genera resumen con IA y lo envia por Telegram
+      Environment:
+        Variables:
+          GROQ_API_KEY: !Ref GroqApiKey
+          TELEGRAM_BOT_TOKEN: !Ref TelegramBotToken
+          TELEGRAM_CHAT_ID: !Ref TelegramChatId
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 11 * * ? *)
+            Description: Se ejecuta todos los dias a las 11:00 UTC (8:00 AM Argentina)
+            Enabled: true
+
+Outputs:
+  FunctionName:
+    Description: Nombre de la funcion Lambda
+    Value: !Ref NbaDailyDigestFunction
+  FunctionArn:
+    Description: ARN de la funcion Lambda
+    Value: !GetAtt NbaDailyDigestFunction.Arn

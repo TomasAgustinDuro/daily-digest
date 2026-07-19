@@ -55,6 +55,9 @@ Desktop.ini
 # Logs
 *.log
 
+# Lambda invoke output
+output.json
+
 # Documentación interna / notas personales
 resumen-proyecto.md
 roadmap.md

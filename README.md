@@ -118,16 +118,59 @@ python -m src.notifier.telegram_bot
 | `TELEGRAM_BOT_TOKEN` | Token del bot de Telegram (BotFather) |
 | `TELEGRAM_CHAT_ID` | ID del chat destino del mensaje |
 
-## Deploy (pendiente)
+## Deploy en AWS
 
-El deploy se realizará con AWS SAM:
+### Requisitos
+
+- [AWS CLI](https://aws.amazon.com/cli/) instalado y configurado (`aws configure`)
+- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) instalado
+
+### Primer deploy
 
 ```bash
 sam build
 sam deploy --guided
 ```
 
-El trigger será un EventBridge Schedule (cron diario a las 8:00 AM).
+Durante el `--guided` se piden:
+- **Stack name**: `daily-digest`
+- **Region**: `us-east-1`
+- **GroqApiKey**: tu API key de Groq
+- **TelegramBotToken**: token del bot de Telegram
+- **TelegramChatId**: tu chat ID de Telegram
+
+La config queda guardada en `samconfig.toml` para futuros deploys.
+
+### Actualizar despues de cambios en el codigo
+
+```bash
+sam build
+sam deploy
+```
+
+### Actualizar solo las API keys (sin cambios de codigo)
+
+```bash
+sam deploy --parameter-overrides GroqApiKey=TU_KEY TelegramBotToken=TU_TOKEN TelegramChatId=TU_CHAT_ID
+```
+
+### Invocar manualmente
+
+```bash
+aws lambda invoke --function-name daily-digest-NbaDailyDigestFunction-XXXX output.json
+```
+
+(El nombre exacto de la funcion se muestra al final del deploy)
+
+### Ver logs
+
+```bash
+sam logs --name NbaDailyDigestFunction --stack-name daily-digest
+```
+
+### Schedule
+
+La Lambda se ejecuta automaticamente todos los dias a las **11:00 UTC (8:00 AM Argentina)** via EventBridge.
 
 ## Costos estimados
 
